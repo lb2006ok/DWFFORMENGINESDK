@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dwfformenginesdk</title>
+    <!-- 配置对象 -->
+    <script>
+      var ip = location.host;
+      var protocol = location.protocol;
+      var port = location.port;
+      port = !port || port == '' ? 80 : port;
+      var idx = ip.indexOf(":");
+      ip = idx == -1 ? ip : ip.substring(0, idx);
+
+      // 全局配置
+      window.Config = {
+        modelerApiBase: `http://172.21.11.85:6060`,
+        appApiBase: `http://172.21.11.85:9090`,
+        monitorApiBase: `http://172.21.11.85:7070`,
+        modelerWSBaseUrl: `ws://${ip}:6060`,
+        appWSBaseUrl: `ws://${ip}:9090`,
+        monitorWSBaseUrl: `ws://${ip}:7070`,
+        tomcatUrl: `http://172.21.11.85:6060:${port}`,
+        debuggerScriptPort: '4242',
+        formCacheOpen: true,
+        formCacheTimeoutBySecond: 864000,
+        isolatedNetwork: false,
+        baiduMapKey: '7dlPh6TyYSbm5RrUulF4JRfNfO5qnr13',
+        AgGridKey: 'Using_this_{AG_Grid}_Enterprise_key_{AG-080625}_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_legal@ag-grid.com___For_help_with_changing_this_key_please_contact_info@ag-grid.com___{Tsinghua_University_Publishing_House}_is_granted_a_{Multiple_Applications}_Developer_License_for_{1}_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_need_to_be_licensed_in_addition_to_the_ones_working_with_{AG_Grid}_Enterprise___This_key_has_not_been_granted_a_Deployment_License_Add-on___This_key_works_with_{AG_Grid}_Enterprise_versions_released_before_{5_December_2026}____[v3]_[01]_MTc5NjQyODgwMDAwMA==c2e0fab3e00c23637f6cd3e9c28245f0',
+        aesKeyA: 'gJBd2z7fJ!C0^e3T',
+        aesKeyB: 'vndKmU#KbOxpifI0',
+        aesIv: 'KPXUGHNBRWLYKRTE',
+        baseModelerRouteName: 'modeler-web',
+        baseAppRouteName: 'app-web',
+        protocol: protocol,
+        ip: ip,
+        ModelerPort: '8180'
+      }
+    </script>
+
+    <!-- SDK样式 -->
+    <link rel="stylesheet" href="https://gitee.com/tsinghua-nercbds/DWF4.0/raw/dev-sdk/app-web/src/views/sdk/lib/style.css">
+    <!-- SDK脚本 -->
+    <script src="https://gitee.com/tsinghua-nercbds/DWF4.0/raw/dev-sdk/app-web/src/views/sdk/lib/dwf-form-engine.umd.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .controls button {
+        margin: 5px;
+        padding: 8px 16px;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+      }
+
+      .controls button:hover {
+        background: #f5f7fa;
+      }
+
+      .controls button.primary {
+        background: #409eff;
+        color: white;
+        border-color: #409eff;
+      }
+
+      .controls button.primary:hover {
+        background: #66b1ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="loading">正在加载表单引擎...</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+    <script>
+      // ============================================
+      // SDK配置
+      // ============================================
+      const SDK_CONFIG = {
+        token: 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzRTlBNkQyRkVBMDk4MzRGOEUyQzMwODM1REVBREVDNSIsImV4cCI6MTc3Mjk1NjQ4N30.KUd6adQC5SBWpdlzzRUR4dA2eT5bKohs7nHnxzYupcgxHRdcykY8AwxvDVXF_0i0hnsWdVYEgyvPnJqFOn5ACQ',
+        path: '/forms/Part/selectForm',
+        query: {
+          displayType: 'edit'
+        },
+        debug: true
+      };
+
+      // ============================================
+      // 方式1：使用工厂函数（推荐）
+      // ============================================
+      let sdkInstance = null;
+
+      const sdk = new DWFFORMENGINE(SDK_CONFIG);
+
+      sdk.mount('#app');
+
+      sdk.on('sdk:error', function (event) {
+        console.error('[SDK] 发生错误', event);
+      });
+
+      sdk.on('sdk:unmounted', function (event) {
+        console.log('[SDK] 表单已卸载', event);
+        sdkInstance = null;
+      });
+      // ============================================
+      // 页面卸载时清理
+      // ============================================
+      window.addEventListener('beforeunload', function () {
+        if (sdkInstance) {
+          sdkInstance.unmount();
+        }
+      });
+    </script>
+  </body>
+</html>
