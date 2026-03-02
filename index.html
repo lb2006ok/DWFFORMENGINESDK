@@ -99,30 +99,370 @@
       };
 
       // ============================================
-      // 方式1：使用工厂函数（推荐）
+      // 创建SDK实例
       // ============================================
       let sdkInstance = null;
-
       const sdk = new DWFFORMENGINE(SDK_CONFIG);
 
-      sdk.mount('#app');
+      // ============================================
+      // 生命周期事件监听
+      // ============================================
 
-      sdk.on('sdk:error', function (event) {
-        console.error('[SDK] 发生错误', event);
+      // SDK 初始化事件
+      sdk.on('sdk:init', function(event) {
+        console.log('[SDK生命周期] SDK初始化', event);
       });
 
-      sdk.on('sdk:unmounted', function (event) {
-        console.log('[SDK] 表单已卸载', event);
+      sdk.on('sdk:ready', function(event) {
+        console.log('[SDK生命周期] SDK就绪', event);
+        sdkInstance = event.instance || sdk;
+      });
+
+      sdk.on('sdk:mounted', function(event) {
+        console.log('[SDK生命周期] SDK已挂载', event);
+      });
+
+      sdk.on('sdk:unmounted', function(event) {
+        console.log('[SDK生命周期] SDK已卸载', event);
         sdkInstance = null;
       });
+
+      sdk.on('sdk:error', function(event) {
+        console.error('[SDK生命周期] SDK错误', event);
+      });
+
+      // ============================================
+      // 表单生命周期事件监听
+      // ============================================
+
+      // 表单创建
+      sdk.on('form:created', function(event) {
+        console.log('[表单生命周期] 表单已创建', event);
+        console.log('  - 表单实例:', event.instance);
+      });
+
+      // 表单挂载
+      sdk.on('form:mounted', function(event) {
+        console.log('[表单生命周期] 表单已挂载', event);
+        console.log('  - 表单实例:', event.instance);
+        console.log('  - 加载时间:', event.loadTime);
+      });
+
+      // 表单加载完成
+      sdk.on('form:loaded', function(event) {
+        console.log('[表单生命周期] 表单数据加载完成', event);
+        console.log('  - 目标类:', event.targetClass);
+        console.log('  - 视图名:', event.viewName);
+      });
+
+      // 表单卸载
+      sdk.on('form:unmounted', function(event) {
+        console.log('[表单生命周期] 表单已卸载', event);
+      });
+
+      // 表单重置
+      sdk.on('form:reset', function(event) {
+        console.log('[表单生命周期] 表单已重置', event);
+      });
+
+      // ============================================
+      // 验证事件监听
+      // ============================================
+
+      // 验证开始前
+      sdk.on('validate:before', function(event) {
+        console.log('[验证事件] 验证开始', event);
+        console.log('  - 验证项:', event.item);
+      });
+
+      // 验证完成
+      sdk.on('validate:after', function(event) {
+        console.log('[验证事件] 验证完成', event);
+        console.log('  - 验证结果:', event.valid);
+        console.log('  - 验证数据:', event.data);
+      });
+
+      // 验证错误
+      sdk.on('validate:error', function(event) {
+        console.warn('[验证事件] 验证失败', event);
+        console.log('  - 错误信息:', event.errors);
+      });
+
+      // ============================================
+      // 提交事件监听
+      // ============================================
+
+      // 提交开始前
+      sdk.on('submit:before', function(event) {
+        console.log('[提交事件] 提交开始', event);
+        console.log('  - 操作类型:', event.action);
+        console.log('  - 数据对象:', event.obj);
+        console.log('  - 目标类:', event.className);
+      });
+
+      // 表单提交中
+      sdk.on('form:submitting', function(event) {
+        console.log('[提交事件] 表单正在提交...', event);
+        console.log('  - 操作类型:', event.action);
+      });
+
+      // 表单提交成功
+      sdk.on('form:submitted', function(event) {
+        console.log('[提交事件] 表单提交成功', event);
+        console.log('  - 操作类型:', event.action);
+        console.log('  - 返回结果:', event.result);
+      });
+
+      // 表单提交错误
+      sdk.on('form:error', function(event) {
+        console.error('[提交事件] 表单提交失败', event);
+        console.log('  - 操作类型:', event.action);
+        console.log('  - 错误阶段:', event.phase);
+        console.log('  - 错误信息:', event.error);
+      });
+
+      // ============================================
+      // 弹窗事件监听
+      // ============================================
+
+      // 弹窗打开
+      sdk.on('dialog:opened', function(event) {
+        console.log('[弹窗事件] 弹窗已打开', event);
+        console.log('  - 目标类:', event.targetClass);
+        console.log('  - 视图名:', event.viewName);
+        console.log('  - 显示类型:', event.displayType);
+      });
+
+      // 弹窗关闭
+      sdk.on('dialog:closed', function(event) {
+        console.log('[弹窗事件] 弹窗已关闭', event);
+        console.log('  - 返回结果:', event.result);
+        console.log('  - 类型:', event.type);
+      });
+
+      // 弹窗确认
+      sdk.on('dialog:confirmed', function(event) {
+        console.log('[弹窗事件] 弹窗确认', event);
+        console.log('  - 返回结果:', event.result);
+      });
+
+      // 弹窗取消
+      sdk.on('dialog:canceled', function(event) {
+        console.log('[弹窗事件] 弹窗取消', event);
+      });
+
+      // ============================================
+      // 抽屉事件监听
+      // ============================================
+
+      // 抽屉打开
+      sdk.on('drawer:opened', function(event) {
+        console.log('[抽屉事件] 抽屉已打开', event);
+        console.log('  - 目标类:', event.targetClass);
+        console.log('  - 视图名:', event.viewName);
+        console.log('  - 方向:', event.direction);
+      });
+
+      // 抽屉确认
+      sdk.on('drawer:confirmed', function(event) {
+        console.log('[抽屉事件] 抽屉确认', event);
+        console.log('  - 返回结果:', event.result);
+      });
+
+      // 抽屉取消
+      sdk.on('drawer:canceled', function(event) {
+        console.log('[抽屉事件] 抽屉取消', event);
+      });
+
+      // ============================================
+      // Tab事件监听
+      // ============================================
+
+      // Tab打开
+      sdk.on('tab:opened', function(event) {
+        console.log('[Tab事件] Tab已打开', event);
+        console.log('  - Tab信息:', event.tab);
+      });
+
+      // Tab确认
+      sdk.on('tab:confirmed', function(event) {
+        console.log('[Tab事件] Tab确认', event);
+        console.log('  - 返回结果:', event.result);
+      });
+
+      // ============================================
+      // 操作事件监听
+      // ============================================
+
+      // 操作执行前
+      sdk.on('operation:before', function(event) {
+        console.log('[操作事件] 操作即将执行', event);
+        console.log('  - 操作名称:', event.operationName);
+        console.log('  - 目标类:', event.targetClass);
+        console.log('  - 自定义数据:', event.customData);
+      });
+
+      // ============================================
+      // 数据总线（DataBus）使用示例
+      // ============================================
+
+      // 挂载成功后使用数据总线
+      sdk.on('sdk:mounted', function(event) {
+        const dataBus = sdk.getDataBus();
+
+        if (dataBus) {
+          console.log('[数据总线] DataBus已就绪');
+
+          // 监听数据变化
+          dataBus.watch('formData', function(newVal, oldVal) {
+            console.log('[数据总线] formData变化:', {
+              old: oldVal,
+              new: newVal
+            });
+          });
+
+          // 监听验证状态变化
+          dataBus.watch('isValid', function(newVal, oldVal) {
+            console.log('[数据总线] 验证状态变化:', {
+              old: oldVal,
+              new: newVal
+            });
+          });
+
+          // 监听提交状态变化
+          dataBus.watch('isSubmitting', function(newVal, oldVal) {
+            console.log('[数据总线] 提交状态变化:', {
+              old: oldVal,
+              new: newVal
+            });
+          });
+
+          // 设置初始状态
+          dataBus.set('customData', {
+            initializedAt: new Date().toISOString()
+          });
+
+          console.log('[数据总线] 当前状态:', dataBus.getState());
+        }
+      });
+
+      // 表单加载完成后获取数据
+      sdk.on('form:loaded', function(event) {
+        const dataBus = sdk.getDataBus();
+
+        if (dataBus) {
+          // 获取表单数据
+          const formData = dataBus.getFormData();
+          console.log('[数据总线] 当前表单数据:', formData);
+
+          // 获取所有状态
+          console.log('[数据总线] 完整状态:', dataBus.getState());
+        }
+      });
+
+      // ============================================
+      // SDK方法调用示例
+      // ============================================
+
+      // 获取表单数据
+      function getFormData() {
+        const data = sdk.getFormData();
+        console.log('[SDK方法] 获取表单数据:', data);
+        return data;
+      }
+
+      // 设置表单数据
+      function setFormData(data) {
+        sdk.setFormData(data);
+        console.log('[SDK方法] 设置表单数据:', data);
+      }
+
+      // 设置单个字段值
+      function setFieldValue(fieldName, value) {
+        sdk.setFieldValue(fieldName, value);
+        console.log('[SDK方法] 设置字段值:', { fieldName, value });
+      }
+
+      // 获取单个字段值
+      function getFieldValue(fieldName) {
+        const value = sdk.getFieldValue(fieldName);
+        console.log('[SDK方法] 获取字段值:', { fieldName, value });
+        return value;
+      }
+
+      // 验证表单
+      async function validateForm() {
+        console.log('[SDK方法] 开始验证表单...');
+        const result = await sdk.validate();
+        console.log('[SDK方法] 验证结果:', result);
+        return result;
+      }
+
+      // 提交表单
+      async function submitForm() {
+        console.log('[SDK方法] 开始提交表单...');
+        const result = await sdk.submit();
+        console.log('[SDK方法] 提交结果:', result);
+        return result;
+      }
+
+      // 重置表单
+      function resetForm() {
+        sdk.resetForm();
+        console.log('[SDK方法] 表单已重置');
+      }
+
+      // 刷新表单
+      async function refreshForm() {
+        console.log('[SDK方法] 开始刷新表单...');
+        await sdk.refresh();
+        console.log('[SDK方法] 表单已刷新');
+      }
+
+      // 使用链式API
+      function chainApiExample() {
+        console.log('[SDK方法] 链式API示例:');
+
+        sdk
+                .setFormData({ name: '测试数据', code: 'TEST001' })
+                .validate()
+                .then(function(result) {
+                  console.log('  - 验证结果:', result);
+                  if (result.valid) {
+                    return sdk.submit();
+                  }
+                  return Promise.reject('验证失败');
+                })
+                .then(function(result) {
+                  console.log('  - 提交结果:', result);
+                })
+                .catch(function(error) {
+                  console.error('  - 错误:', error);
+                });
+      }
+
+      // ============================================
+      // 挂载SDK
+      // ============================================
+      sdk.mount('#app');
+
       // ============================================
       // 页面卸载时清理
       // ============================================
-      window.addEventListener('beforeunload', function () {
+      window.addEventListener('beforeunload', function() {
         if (sdkInstance) {
           sdkInstance.unmount();
         }
       });
+
+      // ============================================
+      // 全局暴露SDK实例（用于调试）
+      // ============================================
+      window.DWF_SDK = sdk;
+      console.log('[SDK] SDK实例已挂载到 window.DWF_SDK，可在控制台调试使用');
+      console.log('[SDK] 可用方法: getFormData, setFormData, setFieldValue, getFieldValue, validate, submit, resetForm, refresh');
+      console.log('[SDK] 数据总线: getDataBus()');
+      console.log('[SDK] 事件总线: getEventBus()');
     </script>
   </body>
 </html>
